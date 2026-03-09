@@ -24,6 +24,8 @@ Diese Dokumente sind der **Einstiegspunkt** für Menschen und KI‑Assistenten.
 ## Dateien (Kurzbeschreibung)
 - `repo_context.md` – Was ist das Projekt, Ziele/Nicht‑Ziele, Arbeitsweise
 - `constraints.md` – Guardrails: was KI darf/nicht darf, Qualitätsgrenzen
+- `instruction-priority.md` – Was gilt bei widersprüchlichen Anweisungen? (Priorität + Sprachregeln)
+- `legacy-playbook.md` – Einstieg für Legacy-Code (sicher navigieren, small diffs)
 - `prompts/` – Rollenprompts (Researcher, Reviewer, Documenter, …)
 - `evaluation.md` – (optional) Scorecards/Checks für AI‑Readiness
 

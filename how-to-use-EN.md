@@ -23,7 +23,7 @@ The goal is safer AI suggestions and less maintainer overhead.
 
 ## 3) Quickstart (5 minutes)
 1. Read: `README.md`
-2. Open the AI hub: `docs/ai/README.md`
+2. Open the AI hub: `docs/ai/README-EN.md`
 3. Context: `docs/ai/repo_context.md`
 4. Guardrails: `docs/ai/constraints.md`
 5. Prompts: `docs/ai/prompts/` (e.g., `researcher.md`)

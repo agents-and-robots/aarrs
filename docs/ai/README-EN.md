@@ -23,6 +23,8 @@ These documents are the **entry point** for humans and AI assistants.
 
 ## Files (short)
 - `repo_context.md` – what this is, goals/non-goals, working mode
-- `constraints.md` – guardrails: what AI may/may not do
+- `constraints.md` – guardrails: what AI may/may not do (optional synced EN: `constraints-EN.md`)
+- `instruction-priority.md` – conflict resolution + language policy
+- `legacy-playbook.md` – legacy entry guide (navigate safely, small diffs)
 - `prompts/` – role prompts (researcher, reviewer, documenter, …)
 - `evaluation.md` – (optional) scorecards/checks for AI readiness
