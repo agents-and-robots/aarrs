@@ -13,8 +13,11 @@ Diese Prompts sind als **Rollen-Templates** gedacht. Ziel: reproduzierbare Ergeb
 - `output-format.md` definiert eine Standard-Markdownstruktur für alle Rollen.
 - Rollenprompts dürfen zusätzliche Abschnitte ergänzen, aber die Pflichtabschnitte nicht entfernen.
 
-## Rollen (geplant)
-- `researcher.md` – Patterns/Best Practices extrahieren, Reports schreiben
-- `reviewer.md` – Reviews entlang Guardrails, Risiken & Trade-offs
-- `documenter.md` – Doku konsistent erstellen/aktualisieren
-- `implementer.md` – kleine, sichere Änderungen mit Plan (**implemented**)
+## Rollenstatus
+
+| Rolle | Datei | Status |
+|---|---|---|
+| Researcher | `researcher.md` | implemented |
+| Implementer | `implementer.md` | implemented |
+| Reviewer | `reviewer.md` | planned |
+| Documenter | `documenter.md` | planned |

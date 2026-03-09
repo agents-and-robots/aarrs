@@ -49,7 +49,7 @@ Bei Änderungen an einer der Dateien bitte prüfen/aktualisieren:
 - `docs/ai/instruction-priority.md` ↔ `docs/ai/instruction-priority-EN.md`
 - `docs/ai/evaluation-preview.md` ↔ `docs/ai/evaluation-preview-EN.md`
 
-> Optional/Später: `docs/ai/constraints-EN.md` als echte EN-Version der Guardrails.
+> `docs/ai/constraints-EN.md` existiert als synced EN-Version. Bei Änderungen an `constraints.md` bitte `constraints-EN.md` mitziehen.
 
 ### 2.3 Wenn EN (noch) nicht nachgezogen wurde
 Wenn du Inhalte nur in DE aktualisieren kannst:

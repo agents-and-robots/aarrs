@@ -1,7 +1,22 @@
 # AI‑Zentrale (AARRS)
 
 Diese Dokumente sind der **Einstiegspunkt** für Menschen und KI‑Assistenten.
+**Start hier:** `how-to-use.md` (DE) / `how-to-use-EN.md` (EN)  
+**AI‑Einstieg:** `docs/ai/README.md` (siehe “First‑run (10 Minuten)”)
 
+## First‑run (10 Minuten) — Kanonische Reihenfolge
+Wenn du neu hier bist (Mensch oder KI), nutze diese Reihenfolge:
+
+1. `how-to-use.md` (praktischer Einstieg / Integration)
+2. `repo_context.md` (Ziele, Architektur, Konventionen)
+3. `constraints.md` (Guardrails + “small diff” Standard)
+4. `instruction-priority.md` (falls Anweisungen kollidieren)
+5. `legacy-playbook.md` (wenn Legacy/gewachsen)
+6. `prompts/` (Rolle wählen, Output-Format beachten)
+
+> Hinweis: **Lesereihenfolge ≠ Konfliktpriorität.**  
+> Bei widersprüchlichen Anweisungen gilt `instruction-priority.md` (Constraints sind dann “Quelle der Wahrheit”).
+> 
 ## Wenn du KI bist: so arbeitest du hier
 1. Lies zuerst `repo_context.md`.
 2. Beachte `constraints.md` strikt.

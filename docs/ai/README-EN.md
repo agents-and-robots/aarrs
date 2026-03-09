@@ -1,7 +1,22 @@
 # AI Hub (AARRS)
 
 These documents are the **entry point** for humans and AI assistants.
+**Start here:** `how-to-use.md` (DE) / `how-to-use-EN.md` (EN)  
+**AI‑Einstieg:** `docs/ai/README.md` (siehe “First‑run (10 Minuten)”)
 
+## First run (10 minutes) — Canonical order
+If you are new here (human or AI), use this order:
+
+1. `how-to-use.md` (practical entry / integration)
+2. `repo_context.md` (goals, architecture, conventions)
+3. `constraints.md` (guardrails + “small diff” default)
+4. `instruction-priority.md` (if instructions conflict)
+5. `legacy-playbook.md` (if working in legacy/grown code)
+6. `prompts/` (pick a role, follow the output format)
+
+> Note: **reading order ≠ conflict priority.**  
+> If instructions conflict, follow `instruction-priority.md` (constraints become the source of truth).
+> 
 ## If you are an AI: how to work here
 1. Read `repo_context.md` first.
 2. Follow `constraints.md` strictly.
