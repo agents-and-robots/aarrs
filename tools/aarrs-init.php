@@ -478,10 +478,7 @@ final class Render
     /** @param array<string,mixed> $inventory */
     public static function nextStepsDe(array $inventory): string
     {
-        $base = Templates::nextStepsDeBase();
-        $block = self::nextStepsBlockDe($inventory);
-
-        return Markers::upsertBlock($base, MARKER_NEXT_STEPS_START, MARKER_NEXT_STEPS_END, $block);
+        return self::nextStepsBlockDe($inventory);
     }
 
     /** @param array<string,mixed> $inventory */
@@ -769,7 +766,7 @@ $nextStepsDe = Markers::upsertBlock(
     $existingNextSteps,
     MARKER_NEXT_STEPS_START,
     MARKER_NEXT_STEPS_END,
-    Render::nextStepsDe($inventory) // note: returns doc base + markers, but will still upsert cleanly
+    Render::nextStepsDe($inventory) // now returns block only ✅
 );
 Fs::write($paths['next_steps_de'], $nextStepsDe, $dryRun, $report);
 
