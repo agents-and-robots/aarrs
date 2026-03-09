@@ -5,9 +5,11 @@ Diese Dokumente sind der **Einstiegspunkt** für Menschen und KI‑Assistenten.
 ## Wenn du KI bist: so arbeitest du hier
 1. Lies zuerst `repo_context.md`.
 2. Beachte `constraints.md` strikt.
-3. Wähle eine Rolle aus `prompts/`.
-4. Liefere Ergebnisse als **Markdown** (klar, kurz, mit Annahmen & offenen Fragen).
-5. Bei Unsicherheit: **fragen statt raten**.
+3. Lies `instruction-priority.md`, falls es widersprüchliche Anweisungen gibt.
+4. Wenn du in Legacy-Code arbeitest: nutze `legacy-playbook.md`.
+5. Wähle eine Rolle aus `prompts/`.
+6. Liefere Ergebnisse als **Markdown** (klar, kurz, mit Annahmen & offenen Fragen).
+7. Bei Unsicherheit: **fragen statt raten**.
 
 ## Wenn du Mensch bist: so nutzt du AARRS
 - Nutze `docs/ai/*` als wiederverwendbares Bundle.
@@ -24,8 +26,8 @@ Diese Dokumente sind der **Einstiegspunkt** für Menschen und KI‑Assistenten.
 ## Dateien (Kurzbeschreibung)
 - `repo_context.md` – Was ist das Projekt, Ziele/Nicht‑Ziele, Arbeitsweise
 - `constraints.md` – Guardrails: was KI darf/nicht darf, Qualitätsgrenzen
-- `instruction-priority.md` – Was gilt bei widersprüchlichen Anweisungen? (Priorität + Sprachregeln)
-- `legacy-playbook.md` – Einstieg für Legacy-Code (sicher navigieren, small diffs)
+- `instruction-priority.md` – Konfliktauflösung + Sprachregeln (DE canonical / EN synced)
+- `legacy-playbook.md` – Legacy-Workflow: Orientierung, Risiken, Small-Diff-Slicing
 - `prompts/` – Rollenprompts (Researcher, Reviewer, Documenter, …)
 - `evaluation.md` – (optional) Scorecards/Checks für AI‑Readiness
 

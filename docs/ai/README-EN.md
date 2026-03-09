@@ -5,9 +5,11 @@ These documents are the **entry point** for humans and AI assistants.
 ## If you are an AI: how to work here
 1. Read `repo_context.md` first.
 2. Follow `constraints.md` strictly.
-3. Pick a role from `prompts/`.
-4. Provide results as **Markdown** (clear, concise, with assumptions & open questions).
-5. If unsure: **ask instead of guessing**.
+3. Read `instruction-priority.md` if instructions conflict.
+4. If working in legacy code: use `legacy-playbook.md`.
+5. Pick a role from `prompts/`.
+6. Provide results as **Markdown** (clear, concise, with assumptions & open questions).
+7. If unsure: **ask instead of guessing**.
 
 ## If you are a human: how to use AARRS
 - Treat `docs/ai/*` as a reusable bundle.
@@ -25,6 +27,6 @@ These documents are the **entry point** for humans and AI assistants.
 - `repo_context.md` – what this is, goals/non-goals, working mode
 - `constraints.md` – guardrails: what AI may/may not do (optional synced EN: `constraints-EN.md`)
 - `instruction-priority.md` – conflict resolution + language policy
-- `legacy-playbook.md` – legacy entry guide (navigate safely, small diffs)
+- `legacy-playbook.md` – legacy workflow: orientation, risk awareness, small-diff slicing
 - `prompts/` – role prompts (researcher, reviewer, documenter, …)
 - `evaluation.md` – (optional) scorecards/checks for AI readiness
