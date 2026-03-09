@@ -2,10 +2,16 @@
 
 Optional area for scripts/CLI tools.
 
-## Planned goals
-- `audit`: check that core AARRS files exist and are consistent
-- `score`: compute a lightweight AI-readiness scorecard
-- `init`: initialize AARRS structure in a target repo (non-destructive)
+## Tools
+- `aarrs-init.php`: generates/updates an AI onboarding bundle under `docs/ai/` (inventory, repo context, next steps)
 
 ## Principle
 Tools are **optional**. AARRS should still be useful without any tooling.
+
+## Quickstart
+```bash
+php tools/aarrs-init.php
+# Preview only:
+php tools/aarrs-init.php --dry-run
+# Bilingual output:
+php tools/aarrs-init.php --bilingual

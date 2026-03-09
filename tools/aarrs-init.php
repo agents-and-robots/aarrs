@@ -1,26 +1,30 @@
 <?php
 /**
- * AARRS Init (v1)
+ * AARRS Init (v1.1)
  *
  * No-brainer initializer for AI onboarding in legacy/LAMP repositories.
- * - Default is APPLY (writes files, non-destructive)
- * - Supports --dry-run
+ *
+ * Default behavior:
+ * - APPLY (writes files, non-destructive via marker blocks)
  * - Creates docs/ai/ automatically
- * - Generates:
- *   - docs/ai/README.md (+ optional README-EN.md)
- *   - docs/ai/repo_context.md (+ optional repo_context-EN.md)
- *   - docs/ai/inventory.md + docs/ai/inventory.json
- *   - docs/ai/next-steps.md
+ *
+ * Generates/updates:
+ * - docs/ai/README.md (+ optional README-EN.md)
+ * - docs/ai/repo_context.md (+ optional repo_context-EN.md)
+ * - docs/ai/inventory.md + docs/ai/inventory.json
+ * - docs/ai/next-steps.md
+ * - docs/ai/hotspots.md
  *
  * Principles:
  * - Facts vs assumptions
  * - Marker-based updates only (non-destructive)
+ * - Stable IDs for KB/RAG ingestion
  * - Framework-open via profiles (generic-lamp default)
  */
 
 declare(strict_types=1);
 
-const AARRS_TOOL_VERSION = '0.1.0';
+const AARRS_TOOL_VERSION = '0.1.1';
 const AARRS_SPEC_VERSION = 'v1';
 
 const MARKER_INVENTORY_START = '<!-- AARRS:inventory:start -->';
@@ -28,6 +32,9 @@ const MARKER_INVENTORY_END   = '<!-- AARRS:inventory:end -->';
 
 const MARKER_NEXT_STEPS_START = '<!-- AARRS:next-steps:start -->';
 const MARKER_NEXT_STEPS_END   = '<!-- AARRS:next-steps:end -->';
+
+const MARKER_HOTSPOTS_START = '<!-- AARRS:hotspots:start -->';
+const MARKER_HOTSPOTS_END   = '<!-- AARRS:hotspots:end -->';
 
 final class Cli
 {
@@ -42,8 +49,6 @@ final class Cli
             'lang' => 'de', // de|en
             'bilingual' => false,
             'output_dir' => 'docs/ai',
-            'write_inventory_md' => true,
-            'write_inventory_json' => true,
             'force' => false,
         ];
 
@@ -70,7 +75,7 @@ final class Cli
     public static function printHelp(): void
     {
         $help = <<<TXT
-AARRS Init (v1) — no-brainer AI onboarding initializer
+AARRS Init (v1.1) — no-brainer AI onboarding initializer
 
 Usage:
   php tools/aarrs-init.php [options]
@@ -146,16 +151,24 @@ final class Markers
             return rtrim($before) . "\n\n" . $block . "\n" . ltrim($after);
         }
 
-        // No marker block yet — append at end with spacing
         return rtrim($content) . "\n\n" . $block . "\n";
     }
 }
 
 final class Detect
 {
+    private static function stableId(string $kind, string $path): string
+    {
+        return substr(sha1($kind . '::' . $path), 0, 12);
+    }
+
     /** @return array{detected_files: array<int, array{path:string,type:string}>, detected_dirs: array<int, array{path:string,type:string}>, tooling: array<string,mixed>, detections: array<int, array<string,mixed>>, modules: array<int, array<string,mixed>>, notes: array<int, array{level:string,message:string}>} */
     public static function scan(string $root): array
     {
+        // v1: we intentionally scan relative to current working directory.
+        // $root is reserved for future use.
+        unset($root);
+
         $detectedFiles = [];
         $detectedDirs = [];
         $detections = [];
@@ -214,13 +227,13 @@ final class Detect
         if ($presentDir('wp-content')) {
             $isWp = true;
             $detections[] = [
+                'stable_id' => self::stableId('detection', 'wordpress'),
                 'id' => 'wordpress',
                 'confidence' => 'high',
                 'evidence' => [['path' => 'wp-content', 'reason' => 'directory exists']],
                 'assumptions' => []
             ];
 
-            // WP modules
             $modules = array_merge($modules, self::scanWpModules('wp-content/plugins', 'wordpress-plugin'));
             $modules = array_merge($modules, self::scanWpModules('wp-content/mu-plugins', 'wordpress-mu-plugin'));
             $modules = array_merge($modules, self::scanWpModules('wp-content/themes', 'wordpress-theme'));
@@ -230,6 +243,7 @@ final class Detect
         foreach (['app', 'src', 'custom', 'extensions', 'modules', 'plugins'] as $dir) {
             if ($presentDir($dir)) {
                 $modules[] = [
+                    'stable_id' => self::stableId('custom-code-area', $dir),
                     'kind' => 'custom-code-area',
                     'name' => $dir,
                     'path' => $dir,
@@ -272,7 +286,7 @@ final class Detect
         ];
     }
 
-    /** @return array<int, array{kind:string,name:string,path:string,evidence:array<int,array{path:string,reason:string}>}> */
+    /** @return array<int, array{stable_id:string,kind:string,name:string,path:string,evidence:array<int,array{path:string,reason:string}>}> */
     private static function scanWpModules(string $base, string $kind): array
     {
         $out = [];
@@ -287,14 +301,15 @@ final class Detect
 
             if (is_dir($p)) {
                 $out[] = [
+                    'stable_id' => self::stableId($kind, $p),
                     'kind' => $kind,
                     'name' => $e,
                     'path' => $p,
                     'evidence' => [['path' => $p, 'reason' => 'directory exists']]
                 ];
             } elseif (is_file($p)) {
-                // for mu-plugins single-file plugins
                 $out[] = [
+                    'stable_id' => self::stableId($kind, $p),
                     'kind' => $kind,
                     'name' => $e,
                     'path' => $p,
@@ -378,12 +393,14 @@ final class Render
         $lines[] = '';
         $lines[] = 'This inventory is **best-effort** and intended for humans + LLMs.';
         $lines[] = '';
+
         $lines[] = '## Detections';
         if (count($inventory['detections']) === 0) {
             $lines[] = '- (none)';
         } else {
             foreach ($inventory['detections'] as $d) {
-                $lines[] = '- **' . $d['id'] . '** (confidence: ' . $d['confidence'] . ')';
+                $id = isset($d['stable_id']) ? '`' . $d['stable_id'] . '` ' : '';
+                $lines[] = '- ' . $id . '**' . $d['id'] . '** (confidence: ' . $d['confidence'] . ')';
                 foreach ($d['evidence'] as $ev) {
                     $lines[] = '  - evidence: `' . $ev['path'] . '` — ' . $ev['reason'];
                 }
@@ -401,7 +418,8 @@ final class Render
             $lines[] = '- (none detected)';
         } else {
             foreach ($inventory['modules'] as $m) {
-                $lines[] = '- **' . $m['kind'] . '**: `' . $m['path'] . '`';
+                $id = isset($m['stable_id']) ? ' (id: `' . $m['stable_id'] . '`)' : '';
+                $lines[] = '- **' . $m['kind'] . '**: `' . $m['path'] . '`' . $id;
             }
         }
 
@@ -450,19 +468,23 @@ final class Render
         $lines[] = '- Inventory files: `docs/ai/inventory.md`, `docs/ai/inventory.json`';
         $lines[] = '- Update policy: marker-based (non-destructive)';
         $lines[] = '';
+
         $lines[] = '### Modules (paths)';
         if (count($inventory['modules']) === 0) {
             $lines[] = '- (none detected)';
         } else {
             foreach ($inventory['modules'] as $m) {
-                $lines[] = '- `' . $m['path'] . '` (' . $m['kind'] . ')';
+                $id = isset($m['stable_id']) ? ' — id: `' . $m['stable_id'] . '`' : '';
+                $lines[] = '- `' . $m['path'] . '` (' . $m['kind'] . ')' . $id;
             }
         }
+
         $lines[] = '';
         $lines[] = '### Tooling hints';
         $lines[] = '- composer.json: ' . ($inventory['tooling']['php']['composer']['present'] ? '`composer.json`' : '(not detected)');
         $lines[] = '- package.json: ' . ($inventory['tooling']['node']['package_json']['present'] ? '`package.json`' : '(not detected)');
         $lines[] = '- CI (GitHub Actions): ' . ($inventory['tooling']['ci']['github_actions']['present'] ? 'present' : 'not detected');
+
         $lines[] = '';
         $lines[] = '### Notes';
         foreach ($inventory['notes'] as $n) {
@@ -476,13 +498,7 @@ final class Render
     public static function aiReadmeEn(): string { return Templates::aiReadmeEn(); }
 
     /** @param array<string,mixed> $inventory */
-    public static function nextStepsDe(array $inventory): string
-    {
-        return self::nextStepsBlockDe($inventory);
-    }
-
-    /** @param array<string,mixed> $inventory */
-    private static function nextStepsBlockDe(array $inventory): string
+    public static function nextStepsBlockDe(array $inventory): string
     {
         $steps = [];
 
@@ -545,6 +561,51 @@ final class Render
 
         return implode("\n", $lines);
     }
+
+    /** @param array<string,mixed> $inventory */
+    public static function hotspotsBlockDe(array $inventory): string
+    {
+        $hasCi = (bool)$inventory['tooling']['ci']['github_actions']['present'];
+        $hasTests = (bool)$inventory['tooling']['php']['phpunit']['present'];
+        $moduleCount = count($inventory['modules']);
+
+        $lines = [];
+        $lines[] = '## Heuristische Hotspots';
+        $lines[] = '';
+        $lines[] = '### 1) Validation gap';
+        $lines[] = '- Signal: Tests/CI nicht erkannt oder unklar';
+        $lines[] = '- Evidence:'
+            . ($hasTests ? ' phpunit detected' : ' no phpunit.xml* detected')
+            . ';'
+            . ($hasCi ? ' GitHub Actions detected' : ' no GitHub Actions workflows detected');
+        $lines[] = '- Risiko: Änderungen (insb. Performance/Refactoring) sind schwer abzusichern';
+        $lines[] = '- Next step: Minimum-Validierung in `docs/ai/repo_context.md` ergänzen';
+        $lines[] = '';
+
+        $lines[] = '### 2) Many modules / extensions';
+        $lines[] = '- Signal: viele Module/Extensions/Custom Areas';
+        $lines[] = '- Evidence: `modules` count = **' . $moduleCount . '** (siehe `docs/ai/inventory.md`)';
+        $lines[] = '- Risiko: hohe Side-Effect-Wahrscheinlichkeit, Ownership unklar';
+        $lines[] = '- Next step: Ownership + Hot paths in `docs/ai/repo_context.md` dokumentieren';
+        $lines[] = '';
+
+        $hasComposer = (bool)$inventory['tooling']['php']['composer']['present'];
+        $hasNode = (bool)$inventory['tooling']['node']['package_json']['present'];
+        $hasContainers = (bool)($inventory['tooling']['containers']['docker_compose']['present']
+            || $inventory['tooling']['containers']['dockerfile']['present']
+            || $inventory['tooling']['containers']['lando']['present']);
+
+        $lines[] = '### 3) Build / tooling split';
+        $lines[] = '- Signal: mehrere Toolchains';
+        $lines[] = '- Evidence: composer=' . ($hasComposer ? 'yes' : 'no')
+            . ', node=' . ($hasNode ? 'yes' : 'no')
+            . ', containers=' . ($hasContainers ? 'yes' : 'no');
+        $lines[] = '- Risiko: schwer reproduzierbar (“works on my machine”)';
+        $lines[] = '- Next step: “golden path” Local Setup in `docs/ai/repo_context.md`';
+        $lines[] = '';
+
+        return implode("\n", $lines);
+    }
 }
 
 final class Templates
@@ -580,7 +641,7 @@ Wenn du neu hier bist (Mensch oder KI), nutze diese Reihenfolge:
 ## Wenn du Mensch bist: so nutzt du AARRS
 - Nutze `docs/ai/*` als wiederverwendbares Bundle.
 - Passe `repo_context.md` und `constraints.md` an dein Projekt an.
-- Nutze `inventory.*` und `next-steps.md` als Einstieg, um schnell die größten Lücken zu finden.
+- Nutze `inventory.*`, `next-steps.md` und `hotspots.md` als Einstieg.
 
 ## English version
 See `README-EN.md`.
@@ -593,7 +654,7 @@ MD;
         return <<<MD
 # AI Hub (AARRS)
 
-These documents are the **entry point** for humans and AI assistants.
+These documents are the entry point for humans and AI assistants.
 
 ## First run (10 minutes) — Canonical order
 If you are new here (human or AI), use this order:
@@ -605,21 +666,8 @@ If you are new here (human or AI), use this order:
 5. `docs/ai/legacy-playbook.md` (if legacy/grown)
 6. `docs/ai/prompts/` (pick a role, follow the output format)
 
-> Note: **reading order ≠ conflict priority.**  
+> Note: reading order ≠ conflict priority.  
 > If instructions conflict, follow `docs/ai/instruction-priority.md`.
-
-## If you are an AI: how to work here
-1. Read `repo_context.md` first.
-2. Follow `constraints.md` strictly.
-3. If working in legacy code: use `legacy-playbook.md`.
-4. Pick a role from `prompts/`.
-5. Provide results as **Markdown** (clear, concise, with assumptions & open questions).
-6. If unsure: **ask instead of guessing**.
-
-## If you are a human: how to use AARRS
-- Treat `docs/ai/*` as a reusable bundle.
-- Adapt `repo_context.md` and `constraints.md` to your project.
-- Use `inventory.*` and `next-steps.md` to quickly identify the biggest gaps.
 
 MD;
     }
@@ -630,34 +678,24 @@ MD;
 # Repo Context (AARRS) — DE (canonical)
 
 > Dieses Dokument ist der wichtigste Kontext für Menschen und KI.
-> Schreibe lieber kurze, klare Sätze als lange Texte.
 
 ## Ziele (Goals)
-- TODO: Was ist das Ziel dieses Repos?
+- TODO
 
 ## Nicht‑Ziele (Non-goals)
-- TODO: Was ist explizit nicht Ziel?
+- TODO
 
 ## Architektur / Module Map
-- TODO: Wie ist das Repo grob strukturiert (Ordner, Module, Extensions)?
-- TODO: Wo ist “custom code” vs. vendor/framework?
+- TODO
 
 ## Lokales Setup (Local dev)
-- TODO: Wie startet man das Projekt lokal?
-- TODO: Docker/Lando? PHP/Composer? Node? Datenbank?
+- TODO
 
 ## Validierung (Testing / Validation)
-- TODO: Was ist das Minimum, um Änderungen zu validieren?
-  - docs change:
-  - code change:
-  - config change:
-
-## Deployment / Release (optional)
-- TODO: Wie wird deployed? Gibt es Releases?
+- TODO
 
 ## Ownership / Escalation
-- TODO: Wen fragt man bei Unklarheiten (Module owner)?
-- TODO: Wann braucht es “human go”?
+- TODO
 
 <!-- AARRS:inventory:start -->
 <!-- AARRS:inventory:end -->
@@ -670,35 +708,25 @@ MD;
         return <<<MD
 # Repo Context (AARRS) — EN (synced)
 
-> This document is the most important context for humans and AI.
-> Prefer short, clear sentences over long text.
+> This is the most important context doc for humans and AI.
 
 ## Goals
-- TODO: What is the goal of this repo?
+- TODO
 
 ## Non-goals
-- TODO: What is explicitly not a goal?
+- TODO
 
-## Architecture / Module map
-- TODO: How is the repo structured (folders, modules, extensions)?
-- TODO: Where is “custom code” vs vendor/framework?
+## Architecture / module map
+- TODO
 
 ## Local dev setup
-- TODO: How do you run this locally?
-- TODO: Docker/Lando? PHP/Composer? Node? Database?
+- TODO
 
 ## Testing / validation
-- TODO: What is the minimum to validate changes?
-  - docs change:
-  - code change:
-  - config change:
-
-## Deployment / release (optional)
-- TODO: How is this deployed? Are there releases?
+- TODO
 
 ## Ownership / escalation
-- TODO: Who to ask when unclear (module owners)?
-- TODO: When do you need explicit “human go”?
+- TODO
 
 <!-- AARRS:inventory:start -->
 <!-- AARRS:inventory:end -->
@@ -711,8 +739,18 @@ MD;
         return <<<MD
 # Next steps (AARRS) — generated
 
-Diese Datei ist ein **automatisch generierter** Startpunkt, basierend auf dem aktuellen Repo-Zustand.
-Sie soll Menschen und KI helfen, schnell die **nächsten kleinen, sicheren Schritte** zu finden.
+Diese Datei ist ein automatisch generierter Startpunkt.
+
+MD;
+    }
+
+    public static function hotspotsDeBase(): string
+    {
+        return <<<MD
+# Hotspots (AARRS) — generated
+
+Diese Datei sammelt best-effort Hinweise auf potenzielle Baustellen/Hotspots.
+Sie basiert auf `docs/ai/inventory.json`.
 
 MD;
     }
@@ -724,7 +762,6 @@ MD;
 $dryRun = ($opts['mode'] === 'dry-run');
 
 $report = [];
-
 $outputDir = $opts['output_dir'];
 Fs::ensureDir($outputDir, $dryRun, $report);
 
@@ -736,6 +773,7 @@ $paths = [
     'inventory_json' => $outputDir . '/inventory.json',
     'inventory_md' => $outputDir . '/inventory.md',
     'next_steps_de' => $outputDir . '/next-steps.md',
+    'hotspots_de' => $outputDir . '/hotspots.md',
     'ai_readme_de' => $outputDir . '/README.md',
     'repo_context_de' => $outputDir . '/repo_context.md',
 ];
@@ -746,29 +784,36 @@ Fs::write($paths['inventory_md'], $inventoryMd, $dryRun, $report);
 // AI README (DE)
 Fs::write($paths['ai_readme_de'], Render::aiReadmeDe(), $dryRun, $report);
 
-// repo_context.md: create if missing, else marker-update only
+// repo_context.md (DE): create if missing, else marker-update only
 $existingRepoContext = Fs::read($paths['repo_context_de']);
 $repoContextDe = $existingRepoContext ?? Templates::repoContextTemplateDe();
-
-// ✅ FIX: only insert the generated inventory section body (not a full doc)
 $repoContextDe = Markers::upsertBlock(
     $repoContextDe,
     MARKER_INVENTORY_START,
     MARKER_INVENTORY_END,
     Render::repoContextInventoryBlockMd($inventory)
 );
-
 Fs::write($paths['repo_context_de'], $repoContextDe, $dryRun, $report);
 
-// next-steps.md: create/update via markers
+// next-steps.md (DE): marker update
 $existingNextSteps = Fs::read($paths['next_steps_de']) ?? Templates::nextStepsDeBase();
 $nextStepsDe = Markers::upsertBlock(
     $existingNextSteps,
     MARKER_NEXT_STEPS_START,
     MARKER_NEXT_STEPS_END,
-    Render::nextStepsDe($inventory) // now returns block only ✅
+    Render::nextStepsBlockDe($inventory)
 );
 Fs::write($paths['next_steps_de'], $nextStepsDe, $dryRun, $report);
+
+// hotspots.md (DE): marker update
+$existingHotspots = Fs::read($paths['hotspots_de']) ?? Templates::hotspotsDeBase();
+$hotspotsDe = Markers::upsertBlock(
+    $existingHotspots,
+    MARKER_HOTSPOTS_START,
+    MARKER_HOTSPOTS_END,
+    Render::hotspotsBlockDe($inventory)
+);
+Fs::write($paths['hotspots_de'], $hotspotsDe, $dryRun, $report);
 
 // Language options
 if ($opts['lang'] === 'en' || $opts['bilingual']) {
@@ -779,27 +824,22 @@ if ($opts['lang'] === 'en' || $opts['bilingual']) {
 
     $existingRepoContextEn = Fs::read($repoContextEnPath);
     $repoContextEn = $existingRepoContextEn ?? Templates::repoContextTemplateEn();
-
-    // ✅ FIX: only inventory section body
     $repoContextEn = Markers::upsertBlock(
         $repoContextEn,
         MARKER_INVENTORY_START,
         MARKER_INVENTORY_END,
         Render::repoContextInventoryBlockMd($inventory)
     );
-
     Fs::write($repoContextEnPath, $repoContextEn, $dryRun, $report);
 }
 
 // Summary
 fwrite(STDOUT, "AARRS Init v" . AARRS_TOOL_VERSION . " (" . ($dryRun ? "dry-run" : "apply") . ")\n");
 fwrite(STDOUT, "Output dir: " . $outputDir . "\n\n");
-
 fwrite(STDOUT, "Planned/Applied actions:\n");
 foreach ($report as $r) {
     $line = "- " . $r['action'] . " " . $r['path'];
     if (isset($r['bytes'])) $line .= " (" . $r['bytes'] . " bytes)";
     fwrite(STDOUT, $line . "\n");
 }
-
 fwrite(STDOUT, "\nDone.\n");
