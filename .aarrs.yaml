@@ -1,1 +1,39 @@
-.aarrs.yaml content goes here
+name: "AI-Assistant-Ready Repository Specification (AARRS)"
+repo: "agents-and-robots/aarrs"
+version: "0.1.0"
+mode: "core-template"
+
+intent:
+  - "Provide a reusable repository framework that can be integrated into existing projects (e.g., WordPress, Magento)."
+  - "Provide practical patterns and a PoC-friendly structure (not a prescriptive standard)."
+
+ai:
+  context_updated_at: "2026-03-09"
+  primary_entrypoints:
+    - "docs/ai/README.md"
+    - "docs/ai/repo_context.md"
+    - "docs/ai/constraints.md"
+    - "docs/ai/prompts/"
+
+permissions:
+  ai_can_analyze: true
+  ai_can_suggest_changes: true
+  ai_can_write_docs: true
+  ai_can_modify_templates: true
+  ai_can_merge: false
+
+guardrails:
+  - "No major structural change without a human-approved plan in backlog/roadmap."
+  - "Prefer vendor-neutral wording (GPT/Claude/Llama/GitHub Models)."
+  - "Outputs should be deterministic/auditable where possible (checklists, schemas, templates)."
+
+scoring:
+  dimensions:
+    - name: "structure"
+      range: "0-100"
+    - name: "documentation"
+      range: "0-100"
+    - name: "ai-readability"
+      range: "0-100"
+    - name: "automation"
+      range: "0-100"

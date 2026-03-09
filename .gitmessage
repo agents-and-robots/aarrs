@@ -1,0 +1,16 @@
+<type>(<scope>): <summary>
+
+Context:
+- <why is this change necessary?>
+
+What changed:
+- <bullet 1>
+- <bullet 2>
+
+Impact:
+- <downstream/integration impact?>
+- <breaking? yes/no + note>
+
+Optional:
+- Refs: #<issue>
+- AARRS-Score-Impact: <dimension +/-N>
