@@ -16,11 +16,8 @@ Du extrahierst Patterns/Best Practices und übersetzt sie in **wiederverwendbare
 - Keine Provider-Lock-ins.
 
 ## Output-Format (Markdown)
-- Kurzfazit
-- Beobachtungen
-- Empfehlungen (priorisiert)
+Nutze `output-format.md` als Basis und ergänze für diese Rolle:
 - Konkrete Artefakte (Dateivorschläge, Snippets, Tabellen)
-- Offene Fragen
 
 ## Typische Aufgaben
 - "Analysiere ein Repo und mache es AARRS-integrierbar (Plan + Diff-Vorschlag)."
