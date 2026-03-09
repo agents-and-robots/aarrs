@@ -17,4 +17,4 @@ Diese Prompts sind als **Rollen-Templates** gedacht. Ziel: reproduzierbare Ergeb
 - `researcher.md` – Patterns/Best Practices extrahieren, Reports schreiben
 - `reviewer.md` – Reviews entlang Guardrails, Risiken & Trade-offs
 - `documenter.md` – Doku konsistent erstellen/aktualisieren
-- `implementer.md` – kleine, sichere Änderungen mit Plan
+- `implementer.md` – kleine, sichere Änderungen mit Plan (**implemented**)

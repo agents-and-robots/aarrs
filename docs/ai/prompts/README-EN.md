@@ -17,4 +17,4 @@ These prompts are **role templates** aimed at producing consistent, repeatable o
 - `researcher.md` – extract patterns/best practices, write reports
 - `reviewer.md` – review against guardrails, highlight risks & trade-offs
 - `documenter.md` – create/update docs consistently
-- `implementer.md` – propose small, safe changes with a plan
+- `implementer.md` – propose small, safe changes with a plan (**implemented**)
