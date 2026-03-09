@@ -2,6 +2,9 @@
 
 AARRS is a **core template** (a thought-starter + toolbox) that helps you extend GitHub repositories so that AI assistants (and humans) can **understand them faster, improve them more safely, and document them more consistently**.
 
+**Start here:** `how-to-use-EN.md` (EN) / `how-to-use.md` (DE)  
+**AI entrypoint:** `docs/ai/README-EN.md`
+
 > Focus: **integration into existing repos** (e.g., WordPress, Magento) — not a showcase repo.
 
 ## Why?
