@@ -1,6 +1,6 @@
 # Legacy Playbook (AARRS) — EN (synced)
 
-This document helps (especially junior devs) navigate **grown/legacy codebases** quickly and make changes that are **safe, small, and reviewable**.
+This document helps (especially junior devs) navigate **grown/legacy code** quickly and make changes that are **safe, small, and reviewable**.
 
 > **Canonical:** German (`legacy-playbook.md`) is the source of truth.  
 > **Sync:** Update this file when the DE version changes.
@@ -8,7 +8,7 @@ This document helps (especially junior devs) navigate **grown/legacy codebases**
 ---
 
 ## 1) Goal: “Move safely without understanding everything”
-You do not need to understand the entire system to make a good change.  
+You don’t need to understand the whole system to make a good change.  
 You only need enough context to:
 - slice scope cleanly,
 - identify risks,
@@ -16,66 +16,67 @@ You only need enough context to:
 
 ---
 
-## 2) Quickstart: 15-minute orientation checklist
+## 2) 15-minute orientation checklist
 1. Read `docs/ai/repo_context.md` (goals/non-goals, architecture, conventions).
 2. Read `docs/ai/constraints.md` (small diffs, secrets, traceability).
-3. Find the execution entry point for your task:
+3. Read `docs/ai/instruction-priority.md` if instructions conflict.
+4. Find the entry point for your task:
     - where is the code **called**?
     - where are the **boundaries** (modules/packages/folders)?
-4. Create a short note (in issue/PR or backlog):
+5. Write a short note (issue/PR/backlog):
     - **What will I change?**
-    - **What will I explicitly not change?**
-    - **Which risks/side effects** do I suspect?
+    - **What will I intentionally not change?**
+    - **Which side effects** do I suspect?
 
 ---
 
-## 3) Common legacy traps (and how to reduce risk)
+## 3) Common legacy traps (and mitigations)
 ### 3.1 Implicit contracts
-Legacy code often has “invisible rules” (formats, globals, ordering).
-- Treat every assumption as a risk until verified.
-- Document assumptions explicitly (see output format: Assumptions).
+Invisible rules (formats, ordering, globals).
+- Treat every guess as an **assumption** until verified.
+- Mark assumptions explicitly (see prompt output format: *Assumptions*).
 
 ### 3.2 Side effects & global state
-- Look for: globals, singletons, statics, config reads, caches, hidden I/O
-- If unsure: start with **docs/tests/logging** only.
+- Watch for: globals, singletons, statics, caches, hidden I/O, config reads.
+- If unsure: start with **docs/tests/logging**.
 
-### 3.3 Copy/paste structures
-- Do not “clean up everything” first.
-- Improve one spot, then extract a pattern.
+### 3.3 “Just a quick cleanup”
+- Legacy loves “just quick…”. That’s how scope explodes.
+- Improve one spot first; extract patterns later.
 
 ### 3.4 Unclear ownership
-- If it’s unclear who owns an area: ask before refactoring.
+- If ownership is unclear: ask before refactoring.
 
 ---
 
-## 4) How to slice tasks into “small diffs” (practical)
-**Default:** ≤3 files and ≤150 LOC (see `docs/ai/constraints.md`).
+## 4) Slicing tasks into small diffs (practical)
+**Default:** ≤3 files, ≤150 LOC (added+deleted). (See `docs/ai/constraints.md`)
 
-Good diff types for legacy:
-1. **Docs-only fix:** context/setup/glossary/decision log
-2. **Observability diff:** improve logging/tracing to understand behavior
-3. **Safety diff:** guardrails, null checks, better error messages
-4. **Strangler step:** add a small new function and delegate from old path (no big bang)
-5. **Test harness:** minimal test that “freezes” current behavior
-
----
-
-## 5) Definition of done (for legacy PRs)
-At minimum:
-- [ ] PR is a small diff (or justified if larger)
-- [ ] risks/trade-offs are stated
-- [ ] assumptions are explicit
-- [ ] rollback note for higher-risk changes
-- [ ] docs/links updated if “entry points” changed
+Good legacy diff types:
+1. **Docs-only:** setup/glossary/architecture note/decision log
+2. **Observability:** logging/tracing to make behavior visible
+3. **Safety:** better errors, guardrails, null checks
+4. **Strangler step:** small new function, old path only delegates
+5. **Test harness:** minimal test to freeze current behavior
 
 ---
 
-## 6) When to stop and ask
+## 5) Definition of done for legacy PRs
+- [ ] Small diff (or justified if larger)
+- [ ] Risks/trade-offs stated
+- [ ] Assumptions explicit
+- [ ] Validation step stated (even if “manual check”)
+- [ ] Rollback note for higher-risk changes
+- [ ] Docs/links updated if entry points are affected
+
+---
+
+## 6) Stop criteria (“ask instead”)
 Stop if:
-- you touch security-relevant areas (auth, payments, PII, secrets)
-- you see unexpected behavior you can’t explain
-- you need a bigger-than-small diff without a solid justification
-- you’d have to change core architecture/structure
+- security/PII/secrets are involved
+- behavior is unexpected and you can’t explain it
+- you need a bigger-than-small diff without a clean justification
+- you would have to change core structure/architecture
 
 Then:
 - ask 3–7 focused questions
