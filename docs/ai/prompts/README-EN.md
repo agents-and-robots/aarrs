@@ -6,7 +6,12 @@ These prompts are **role templates** aimed at producing consistent, repeatable o
 1. Pick a role (e.g., `researcher.md`)
 2. Read repo context (`../repo_context.md`)
 3. Read constraints (`../constraints.md`)
-4. Execute the task and format the output as specified
+4. Apply the shared output structure in `output-format.md`
+5. Execute the task and format the output as specified
+
+## Shared output format
+- `output-format.md` defines one standard Markdown structure for all roles.
+- Role prompts may add extra sections, but should not remove the required sections.
 
 ## Roles (planned)
 - `researcher.md` – extract patterns/best practices, write reports
